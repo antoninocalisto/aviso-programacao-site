@@ -16,4 +16,5 @@ export interface VersionedState { state: MonitorState; version: string | null; }
 export interface StateRepository { read(): Promise<VersionedState>; write(state: MonitorState, expectedVersion: string | null): Promise<string>; }
 export interface PageSource { fetch(): Promise<Snapshot>; }
 export interface Notifier { send(pending: PendingNotification): Promise<void>; }
+export interface WhatsappNotifier { sendText(text: string): Promise<void>; }
 export class ConcurrentWriteError extends Error {}

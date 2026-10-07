@@ -20,6 +20,34 @@ function setup() {
   return { repository, source, notifier, monitor, advance: (ms: number) => { date = new Date(date.getTime() + ms); } };
 }
 describe('monitor use case + persistence integration', () => {
+  it('sends WhatsApp after persisting email acceptance and never for baseline or unchanged pages', async () => {
+    const s = setup();
+    const whatsapp = { sendText: vi.fn().mockImplementation(async () => {
+      expect(s.repository.state.pending).toBeNull();
+      expect(s.repository.state.notifications).toBe(1);
+    }) };
+    const monitor = new CheckMonitor(s.repository, s.source, s.notifier, undefined, whatsapp);
+    await monitor.execute(); expect(whatsapp.sendText).not.toHaveBeenCalled();
+    s.source.fetch.mockResolvedValue(changed); await monitor.execute(); await monitor.execute();
+    expect(whatsapp.sendText).toHaveBeenCalledTimes(1);
+  });
+  it('records WhatsApp failure without retrying a successful email', async () => {
+    const s = setup();
+    const whatsapp = { sendText: vi.fn().mockRejectedValue(new Error('unavailable')) };
+    const monitor = new CheckMonitor(s.repository, s.source, s.notifier, undefined, whatsapp);
+    await monitor.execute(); s.source.fetch.mockResolvedValue(changed);
+    expect(await monitor.execute()).toBe('notification');
+    expect(s.repository.state.history[0].message).toContain('WhatsApp falhou');
+    await monitor.execute();
+    expect(s.notifier.send).toHaveBeenCalledTimes(1); expect(whatsapp.sendText).toHaveBeenCalledTimes(1);
+  });
+  it('does not send WhatsApp when Resend fails', async () => {
+    const s = setup(); const whatsapp = { sendText: vi.fn() };
+    const monitor = new CheckMonitor(s.repository, s.source, s.notifier, undefined, whatsapp);
+    await monitor.execute(); s.source.fetch.mockResolvedValue(changed);
+    s.notifier.send.mockRejectedValue(new Error('Resend unavailable'));
+    await expect(monitor.execute()).rejects.toThrow(); expect(whatsapp.sendText).not.toHaveBeenCalled();
+  });
   it('records baseline without emailing existing publications', async () => {
     const s = setup(); expect(await s.monitor.execute()).toBe('baseline');
     expect(s.repository.state.snapshot).toEqual(first); expect(s.notifier.send).not.toHaveBeenCalled();

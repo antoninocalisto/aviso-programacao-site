@@ -10,7 +10,7 @@ if (!values['CRON_SECRET']) {
   values['CRON_SECRET'] = randomBytes(32).toString('hex');
   appendFileSync(envFile, `\nCRON_SECRET=${values['CRON_SECRET']}\n`);
 }
-for (const key of ['CRON_SECRET', 'RESEND_API_KEY']) {
+for (const key of ['CRON_SECRET', 'RESEND_API_KEY', 'CALLMEBOT_PHONE', 'CALLMEBOT_API_KEY']) {
   const value = values[key];
   if (!value) { console.log(`${key}: pendente em .env.local`); continue; }
   const child = spawn(process.execPath, [cliPath, 'env', 'add', key, 'production', '--type', 'secret', '--scope', 'antuninosantos-8322s-projects', '--force'], { stdio: ['pipe', 'pipe', 'pipe'] });

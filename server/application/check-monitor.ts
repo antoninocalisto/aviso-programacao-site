@@ -1,10 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { compareSnapshots } from '../domain/compare-snapshots.js';
-import { ConcurrentWriteError, type MonitorState, type Notifier, type PageSource, type StateRepository } from '../domain/monitor.js';
+import { SOURCE_URL, ConcurrentWriteError, type WhatsappNotifier, type MonitorState, type Notifier, type PageSource, type StateRepository } from '../domain/monitor.js';
 
 /** Dependencies are ports; the use case knows nothing about HTTP, Blob or Resend. */
 export class CheckMonitor {
-  constructor(private readonly repository: StateRepository, private readonly source: PageSource, private readonly notifier: Notifier, private readonly now = () => new Date()) {}
+  constructor(private readonly repository: StateRepository, private readonly source: PageSource, private readonly notifier: Notifier, private readonly now = () => new Date(), private readonly whatsapp?: WhatsappNotifier) {}
 
   async execute(): Promise<'baseline' | 'unchanged' | 'notification' | 'busy'> {
     const owner = randomUUID();
@@ -45,6 +45,16 @@ export class CheckMonitor {
         state.snapshot = state.pending.snapshot; state.pending = null;
         state.lastEmailAt = this.now().toISOString(); state.notifications++;
         result = 'notification'; record(result, 'Alteração identificada. Email aceito pelo Resend.');
+        // Commit email acceptance before the secondary channel: its failure must never resend email.
+        await save();
+        if (this.whatsapp) {
+          try {
+            await this.whatsapp.sendText(`10ª RM — Nova atualização no processo OTT.\n\n${SOURCE_URL}\n\nConfira as mudanças: https://aviso-programacao-site.vercel.app\n\nO aviso também foi enviado por email.`);
+            record('notification', 'Aviso de WhatsApp aceito pelo CallMeBot.');
+          } catch {
+            record('error', 'Email aceito pelo Resend, mas o aviso de WhatsApp falhou. Não haverá reenvio automático deste aviso.');
+          }
+        }
       }
       state.lastError = null;
     } catch (error) {

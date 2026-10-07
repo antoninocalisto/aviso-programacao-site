@@ -2,6 +2,7 @@ import { Resend } from 'resend';
 import type { ApiRequest, ApiResponse } from '../server/http/contracts.js';
 import { authorized } from './monitor.js';
 import { RECIPIENT } from '../server/domain/monitor.js';
+import { createWhatsapp } from '../server/composition.js';
 export default async function handler(req: ApiRequest, res: ApiResponse) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method !== 'POST') return res.status(405).setHeader('Allow', 'POST').json({ error: 'Método não permitido.' });
@@ -15,6 +16,14 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
       text: 'Este email de teste foi enviado pela aplicação hospedada na Vercel, usando o Resend.\n\nSite: https://aviso-programacao-site.vercel.app\n\nO monitor envia avisos automaticamente ao detectar alterações no texto ou nos links do processo seletivo. Este teste não representa uma nova publicação.'
     }, { idempotencyKey: `vercel-test-${requestId}` });
     if (result.error || !result.data?.id) return res.status(502).json({ error: 'O Resend não confirmou o envio.' });
-    return res.status(200).json({ accepted: true, emailId: result.data.id, executedOn: 'Vercel' });
+    const channel = createWhatsapp();
+    let whatsapp: 'disabled' | 'accepted' | 'failed' = 'disabled';
+    if (channel) {
+      try {
+        await channel.sendText('Teste pela Vercel — Aviso programação site · 10ª RM. O email de teste também foi aceito pelo Resend. https://aviso-programacao-site.vercel.app');
+        whatsapp = 'accepted';
+      } catch { whatsapp = 'failed'; }
+    }
+    return res.status(200).json({ accepted: true, emailId: result.data.id, executedOn: 'Vercel', whatsapp });
   } catch { return res.status(502).json({ error: 'Falha ao enviar email de teste.' }); }
 }
