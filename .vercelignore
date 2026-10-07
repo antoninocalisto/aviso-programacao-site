@@ -1,0 +1,9 @@
+node_modules
+.env*
+!.env.example
+.angular
+coverage
+test-results
+playwright-report
+source-sample.html
+audit.local.json

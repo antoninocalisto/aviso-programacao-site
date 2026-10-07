@@ -1,0 +1,68 @@
+{
+    "$schema":  "./node_modules/@angular/cli/lib/config/schema.json",
+    "version":  1,
+    "projects":  {
+                     "aviso-programacao-site":  {
+                                                    "projectType":  "application",
+                                                    "root":  "",
+                                                    "sourceRoot":  "src",
+                                                    "architect":  {
+                                                                      "build":  {
+                                                                                    "builder":  "@angular/build:application",
+                                                                                    "options":  {
+                                                                                                    "browser":  "src/main.ts",
+                                                                                                    "tsConfig":  "tsconfig.app.json",
+                                                                                                    "index":  "src/index.html",
+                                                                                                    "styles":  [
+                                                                                                                   "src/styles.css"
+                                                                                                               ],
+                                                                                                    "outputPath":  "dist/aviso-programacao-site"
+                                                                                                },
+                                                                                    "configurations":  {
+                                                                                                           "production":  {
+                                                                                                                              "outputHashing":  "all",
+                                                                                                                              "budgets":  [
+                                                                                                                                              {
+                                                                                                                                                  "type":  "initial",
+                                                                                                                                                  "maximumWarning":  "500kB",
+                                                                                                                                                  "maximumError":  "700kB"
+                                                                                                                                              }
+                                                                                                                                          ],
+                                                                                                                              "optimization":  {
+                                                                                                                                                   "styles":  {
+                                                                                                                                                                  "inlineCritical":  false,
+                                                                                                                                                                  "minify":  true
+                                                                                                                                                              },
+                                                                                                                                                   "fonts":  false,
+                                                                                                                                                   "scripts":  true
+                                                                                                                                               }
+                                                                                                                          },
+                                                                                                           "development":  {
+                                                                                                                               "optimization":  false,
+                                                                                                                               "sourceMap":  true
+                                                                                                                           }
+                                                                                                       },
+                                                                                    "defaultConfiguration":  "production"
+                                                                                },
+                                                                      "serve":  {
+                                                                                    "builder":  "@angular/build:dev-server",
+                                                                                    "options":  {
+                                                                                                    "proxyConfig":  "proxy.conf.json"
+                                                                                                },
+                                                                                    "configurations":  {
+                                                                                                           "development":  {
+                                                                                                                               "buildTarget":  "aviso-programacao-site:build:development"
+                                                                                                                           }
+                                                                                                       },
+                                                                                    "defaultConfiguration":  "development"
+                                                                                },
+                                                                      "test":  {
+                                                                                   "builder":  "@angular/build:unit-test",
+                                                                                   "options":  {
+                                                                                                   "tsConfig":  "tsconfig.spec.json"
+                                                                                               }
+                                                                               }
+                                                                  }
+                                                }
+                 }
+}
