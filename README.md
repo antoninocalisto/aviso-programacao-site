@@ -1,6 +1,6 @@
 # Aviso programação site
 
-Painel responsivo Angular 21 e monitor diário do processo OTT da 10ª RM, hospedados na Vercel. Envio Resend: `onboarding@resend.dev` → `antuninosantos@gmail.com`.
+Painel responsivo Angular 21 e monitor periódico do processo OTT da 10ª RM, hospedados na Vercel. Envio Resend: `onboarding@resend.dev` → `antuninosantos@gmail.com`.
 
 ## Executar localmente
 
@@ -23,7 +23,7 @@ O script encontra o Node portátil e inicia frontend e backend juntos. As depend
 
 A porta **4200** atende a interface; a **3001** atende o backend. O proxy permite que a interface use `/api` sem configurar CORS. A raiz da porta 3001 não tem uma página: use `/api/status`.
 
-Executar localmente não inicia um agendamento diário: o cron automático é executado pela Vercel em produção. O botão “Atualizar painel” apenas consulta o estado armazenado. Sem credenciais de Resend e armazenamento válidas, o painel informa configuração pendente.
+Executar localmente não inicia o agendamento: o GitHub Actions aciona a aplicação na Vercel em produção. O botão “Atualizar painel” apenas consulta o estado armazenado. Sem credenciais de Resend e armazenamento válidas, o painel informa configuração pendente.
 
 Node 22.12+ ou 24. Foi instalado Node portátil 22 no perfil local, sem administrador. Neste computador:
 
@@ -76,7 +76,7 @@ Conecte um Blob privado ao projeto em Storage. Cadastre `RESEND_API_KEY` e `CRON
 npx vercel deploy --prod --scope antuninosantos-8322s-projects
 ```
 
-O `vercel.json` publica os arquivos estáticos Angular, as Functions em `api/` e o cron diário às 12h UTC, na janela de 9h a 10h de Brasília no Hobby. Para inicializar imediatamente, faça uma chamada autenticada à rota `/api/monitor`, sem colocar o segredo em histórico de terminal ou logs. A primeira leitura não envia email de publicações antigas.
+O `vercel.json` publica os arquivos estáticos Angular e as Functions em `api/`. O GitHub Actions agenda as verificações a cada 30 minutos, das 6h às 22h de Brasília. Para inicializar imediatamente, faça uma chamada autenticada à rota `/api/monitor`, sem colocar o segredo em histórico de terminal ou logs. A primeira leitura não envia email de publicações antigas.
 
 Consulte [docs/architecture.md](docs/architecture.md) para mapa de módulos, decisões, comportamento de falhas e limitações.
 
@@ -175,6 +175,6 @@ Fontes oficiais: [Angular compatibilidade](https://angular.dev/reference/version
 
 ## Monitoramento frequente e detalhes das alterações
 
-O workflow .github/workflows/monitor.yml chama a aplicação Vercel a cada 15 minutos (minutos 7, 22, 37 e 52), usando CRON_SECRET cadastrado como segredo no GitHub. O cron diário Vercel permanece como alternativa. O GitHub pode atrasar execuções e desativa agendamentos em repositórios públicos após 60 dias sem atividade; consulte Actions para verificar a operação. O painel consulta o estado a cada 30 segundos e exibe texto e links adicionados/removidos em Ver o que mudou. As 20 últimas detecções ficam preservadas, inclusive quando o envio do email falha. Este histórico começa a registrar detalhes a partir desta versão.
+O workflow .github/workflows/monitor.yml chama a aplicação Vercel a cada 30 minutos, das 6h às 22h de Brasília, incluindo 22h (33 horários diários), usando CRON_SECRET cadastrado como segredo no GitHub. O cron diário Vercel foi removido para evitar verificações adicionais. O GitHub pode atrasar execuções e desativa agendamentos em repositórios públicos após 60 dias sem atividade; consulte Actions para verificar a operação. O painel consulta o estado a cada 30 segundos e exibe texto e links adicionados/removidos em Ver o que mudou. As 20 últimas detecções ficam preservadas, inclusive quando o envio do email falha. Este histórico começa a registrar detalhes a partir desta versão.
 
 POST /api/test-email envia um teste pela aplicação hospedada na Vercel. Exige Bearer CRON_SECRET e o cabeçalho Idempotency-Key; não altera o snapshot ou os contadores de notificações do processo. O remetente continua onboarding@resend.dev: o domínio vercel.app hospeda a aplicação, não o email.
