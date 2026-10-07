@@ -1,6 +1,6 @@
 # Arquitetura
 
-O projeto acompanha exclusivamente o Aviso 003/2026 OTT da 10ª Região Militar e avisa `antuninosantos@gmail.com` usando `onboarding@resend.dev`. A interface Angular 21 apresenta o estado real; a rotina funciona no servidor mesmo com o navegador fechado.
+O projeto acompanha exclusivamente o Aviso 003/2026 OTT da 10ª Região Militar e avisa `antuninosantos@gmail.com` usando `onboarding@resend.dev`. A interface Angular 21 apresenta o estado real; a rotina funciona no servidor mesmo com o navegador fechado. O GitHub Actions aciona a Vercel a cada 15 minutos (horários aproximados), com um cron diário Vercel como alternativa.
 
 ## Mapa para leitura humana e por assistentes de programação
 
@@ -45,12 +45,12 @@ A outbox é salva antes do envio. Cada alteração recebe um UUID utilizado como
 
 ## Limites e operação
 
-- Uma verificação diária pode avisar até cerca de 24h após a publicação. O cron não oferece horário exato no Hobby.
+- O GitHub Actions verifica a cada 15 minutos, mas pode atrasar ou descartar execuções em períodos de carga. Após 60 dias sem atividade no repositório público, o GitHub pode desativar o agendamento. O cron diário Vercel permanece como alternativa.
 - São monitorados texto e links da página, não os bytes dos PDFs. Um PDF substituído no mesmo URL sem mudança no HTML pode não ser detectado.
 - Email aceito pela API não garante entrega na caixa de entrada; consultar eventos do Resend e spam.
 - Um HTML inesperado, indisponibilidade da fonte ou conteúdo muito curto é erro, nunca uma nova publicação.
-- O painel público expõe apenas status operacional; a chave Resend, CRON_SECRET, tokens Blob e a outbox ficam no servidor.
-- Atualizar painel consulta o estado salvo; não aciona uma varredura ou envia email.
+- O painel público expõe status e diferenças do conteúdo público da página oficial. As últimas 20 detecções são preservadas separadamente das leituras sem mudanças. A chave Resend, CRON_SECRET, tokens Blob e a outbox ficam no servidor.
+- Atualizar painel consulta o estado salvo; não aciona uma varredura ou envia email. O painel também consulta o status automaticamente a cada 30 segundos. As detecções mostram linhas e links adicionados/removidos, mesmo quando o envio do email falha.
 - Pendência antiga: consulte o histórico do Resend usando a chave `ott-<pending.id>`. Se enviada, promova `pending.snapshot`, registre `lastEmailAt` e remova a pendência com escrita condicional. Se comprovadamente não enviada, gere uma nova identidade/data somente após essa verificação. Não edite o Blob enquanto a lease estiver ativa.
 
 ## Validação
