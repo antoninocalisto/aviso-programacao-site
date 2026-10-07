@@ -1,5 +1,13 @@
 # Arquitetura
 
+## Canal opcional de WhatsApp
+
+`server/domain/monitor.ts` declara a porta `WhatsappNotifier`. `server/infrastructure/callmebot-whatsapp.ts` implementa o CallMeBot com timeout de 10 segundos, codificação de parâmetros e erros sanitizados. Seu teste `.spec.ts` verifica confirmação, falhas e proteção da chave. `server/composition.ts` habilita o adaptador quando `CALLMEBOT_PHONE` e `CALLMEBOT_API_KEY` estão configurados.
+
+O caso de uso confirma e persiste o email antes de chamar WhatsApp. Falha do canal secundário aparece no histórico e não reenvia o email. Não há repetição automática do WhatsApp nem garantia de entrega única; uma interrupção entre os canais pode impedir o aviso secundário. A primeira leitura e páginas sem alterações não enviam WhatsApp. O endpoint protegido de teste também usa o canal quando configurado.
+
+O CallMeBot é gratuito para uso pessoal, envia pelo número do bot e exige ativação no WhatsApp do destinatário. As instruções estão no README. Telefone e chave são variáveis exclusivas do servidor.
+
 O projeto acompanha exclusivamente o Aviso 003/2026 OTT da 10ª Região Militar e avisa `antuninosantos@gmail.com` usando `onboarding@resend.dev`. A interface Angular 21 apresenta o estado real; a rotina funciona no servidor mesmo com o navegador fechado. O GitHub Actions aciona a Vercel a cada 30 minutos entre 6h e 22h de Brasília, incluindo 22h (horários aproximados).
 
 ## Mapa para leitura humana e por assistentes de programação
@@ -56,15 +64,3 @@ A outbox é salva antes do envio. Cada alteração recebe um UUID utilizado como
 ## Validação
 
 Vitest backend verifica baseline, comparação, outbox, falhas, janela de idempotência e concorrência. TestBed + HttpTestingController verificam composição da interface e integração com o contrato HTTP. Playwright usa API local real no fluxo sem credenciais e respostas controladas para atualização/erro em desktop e mobile. Nenhum teste automatizado envia email real ou modifica o estado de produção.
-
-## WhatsApp gratuito junto com o email
-
-A integra??o opcional usa o [CallMeBot](https://www.callmebot.com/blog/free-api-whatsapp-messages/), gratuito para uso pessoal. O Resend continua enviando o email. Ap?s a confirma??o do Resend, o servidor solicita o aviso de WhatsApp. N?o envia mensagens no baseline nem nas verifica??es sem mudan?as.
-
-1. No WhatsApp do destinat?rio, envie `I allow callmebot to send me messages` ao contato **+34 613 01 49 37**.
-2. Salve a chave recebida em `.env.local`: `CALLMEBOT_API_KEY=sua_chave`. Configure `CALLMEBOT_PHONE` com o n?mero completo, incluindo +55 e DDD.
-3. Cadastre ambas as vari?veis em Production na Vercel e publique novamente. `scripts/configure-secrets.ts` tamb?m cadastra essas vari?veis sem imprimir valores.
-
-Sem essas vari?veis, somente o email funciona. O telefone e a chave permanecem no servidor. Mensagens chegam pelo bot; este servi?o pessoal n?o oferece garantia de disponibilidade ou entrega. Aceita??o pela API n?o confirma recebimento no aparelho.
-
-`server/domain/monitor.ts` declara a porta WhatsappNotifier; `server/infrastructure/callmebot-whatsapp.ts` implementa HTTP com timeout de 10 segundos e erros sanitizados; `server/composition.ts` ativa a integra??o somente quando configurada. O caso de uso persiste a confirma??o do email antes de chamar WhatsApp. Falha do WhatsApp aparece no hist?rico e n?o provoca reenvio do email. N?o h? retry autom?tico do WhatsApp nem garantia de entrega ?nica: uma interrup??o entre os dois canais pode impedir o aviso secund?rio. O endpoint protegido `POST /api/test-email` tamb?m testa WhatsApp quando habilitado; repetir esse teste pode repetir o WhatsApp, pois o CallMeBot n?o tem chave de idempot?ncia.
