@@ -9,6 +9,7 @@ export default async function handler(req: ApiRequest, res: ApiResponse) {
     const state = storageConfigured() ? (await new BlobStateRepository().read()).state : emptyState();
     return res.status(200).json({ configured: isConfigured(), initialized: !!state.snapshot,
       lastCheckedAt: state.lastCheckedAt, lastChangedAt: state.lastChangedAt, lastEmailAt: state.lastEmailAt,
-      lastError: state.lastError, checks: state.checks, notifications: state.notifications, history: state.history });
+      lastError: state.lastError, checks: state.checks, notifications: state.notifications,
+      history: [...(state.changeHistory || []), ...state.history.filter(entry => entry.kind !== 'change')].sort((a, b) => b.at.localeCompare(a.at)) });
   } catch { return res.status(503).json({ error: 'Não foi possível consultar o armazenamento do monitor.' }); }
 }

@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { compareSnapshots } from '../domain/compare-snapshots.js';
 import { ConcurrentWriteError, type MonitorState, type Notifier, type PageSource, type StateRepository } from '../domain/monitor.js';
 
 /** Dependencies are ports; the use case knows nothing about HTTP, Blob or Resend. */
@@ -31,6 +32,8 @@ export class CheckMonitor {
         } else if (state.snapshot.hash !== snapshot.hash) {
           state.pending = { id: randomUUID(), createdAt: this.now().toISOString(), snapshot };
           state.lastChangedAt = this.now().toISOString();
+          state.history = [{ at: state.lastChangedAt, kind: 'change' as const, message: 'Nova alteração detectada na página oficial.', changes: compareSnapshots(state.snapshot, snapshot) }, ...state.history].slice(0, 100);
+          state.changeHistory = [state.history[0], ...(state.changeHistory || [])].slice(0, 20);
           await save();
         } else record('unchanged', 'Página verificada. Nenhuma alteração no processo.');
       }

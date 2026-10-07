@@ -1,3 +1,5 @@
+export interface ChangeDetails { addedText: string[]; removedText: string[]; addedLinks: string[]; removedLinks: string[]; }
+export interface ActivityEntry { at: string; kind: 'baseline' | 'unchanged' | 'change' | 'notification' | 'error'; message: string; changes?: ChangeDetails; }
 export interface MonitorStatus {
   configured: boolean;
   initialized: boolean;
@@ -7,5 +9,5 @@ export interface MonitorStatus {
   lastError: string | null;
   checks: number;
   notifications: number;
-  history: { at: string; kind: 'baseline' | 'unchanged' | 'notification' | 'error'; message: string }[];
+  history: ActivityEntry[];
 }

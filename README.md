@@ -172,3 +172,9 @@ aviso-programacao-site/
 Pastas geradas como `node_modules/`, `dist/`, `.angular/`, `.vercel/` e `test-results/` não fazem parte das camadas da aplicação: guardam dependências, builds, caches, vínculo com a Vercel e resultados dos testes.
 
 Fontes oficiais: [Angular compatibilidade](https://angular.dev/reference/versions), [Angular testes](https://angular.dev/guide/testing), [Vercel cron](https://vercel.com/docs/cron-jobs/usage-and-pricing), [Vercel Blob SDK](https://vercel.com/docs/vercel-blob/using-blob-sdk), [Resend domínio de desenvolvimento](https://resend.com/docs/knowledge-base/403-error-resend-dev-domain), [Resend idempotência](https://resend.com/docs/dashboard/emails/idempotency-keys).
+
+## Monitoramento frequente e detalhes das alterações
+
+O workflow .github/workflows/monitor.yml chama a aplicação Vercel a cada 15 minutos (minutos 7, 22, 37 e 52), usando CRON_SECRET cadastrado como segredo no GitHub. O cron diário Vercel permanece como alternativa. O GitHub pode atrasar execuções e desativa agendamentos em repositórios públicos após 60 dias sem atividade; consulte Actions para verificar a operação. O painel consulta o estado a cada 30 segundos e exibe texto e links adicionados/removidos em Ver o que mudou. As 20 últimas detecções ficam preservadas, inclusive quando o envio do email falha. Este histórico começa a registrar detalhes a partir desta versão.
+
+POST /api/test-email envia um teste pela aplicação hospedada na Vercel. Exige Bearer CRON_SECRET e o cabeçalho Idempotency-Key; não altera o snapshot ou os contadores de notificações do processo. O remetente continua onboarding@resend.dev: o domínio vercel.app hospeda a aplicação, não o email.

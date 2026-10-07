@@ -16,5 +16,5 @@ export class App implements OnInit {
     if (!state.lastCheckedAt || Date.now() - Date.parse(state.lastCheckedAt) > 48 * 60 * 60 * 1000) return 'Verificação atrasada';
     return 'Monitoramento ativo';
   });
-  ngOnInit(): void { this.store.refresh(); }
+  ngOnInit(): void { this.store.refresh(); this.store.startPolling(); }
 }

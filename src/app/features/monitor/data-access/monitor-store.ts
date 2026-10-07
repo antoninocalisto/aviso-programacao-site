@@ -1,6 +1,7 @@
 import { DestroyRef, Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { timer } from 'rxjs';
 import type { MonitorStatus } from '../../../../../shared/monitor-status';
 @Injectable({ providedIn: 'root' })
 export class MonitorStore {
@@ -9,6 +10,7 @@ export class MonitorStore {
   readonly status = signal<MonitorStatus | null>(null);
   readonly loading = signal(false);
   readonly error = signal<string | null>(null);
+  startPolling(): void { timer(30000, 30000).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => this.refresh()); }
   refresh(): void {
     if (this.loading()) return;
     this.loading.set(true); this.error.set(null);
